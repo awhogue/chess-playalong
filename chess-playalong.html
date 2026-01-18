@@ -164,6 +164,69 @@
         .move-count {
             color: var(--text-secondary);
         }
+
+        .eval-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .eval-score {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .win-prob-bar {
+            width: 100px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .win-prob-white {
+            height: 100%;
+            background: var(--text-primary);
+            transition: width 0.3s ease;
+        }
+
+        .fen-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .fen-display, .fen-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .fen-section input {
+            flex: 1;
+            padding: 8px 10px;
+            font-family: inherit;
+            font-size: 11px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-primary);
+        }
+
+        .fen-section input:focus {
+            outline: none;
+            border-color: var(--accent-amber);
+        }
+
+        .fen-btn {
+            padding: 8px 12px !important;
+            font-size: 11px !important;
+        }
         
         /* Analysis section */
         .analysis-section {
@@ -178,7 +241,6 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            overflow: hidden;
         }
         
         .panel-header {
@@ -215,39 +277,136 @@
             margin-bottom: 8px;
             color: var(--accent-amber);
         }
-        
+
         .opening-eco {
             font-size: 12px;
             color: var(--text-muted);
             margin-bottom: 16px;
         }
-        
+
         .opening-stats {
             display: flex;
             gap: 24px;
             font-size: 12px;
+            margin-bottom: 20px;
         }
-        
+
         .stat {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
-        
+
         .stat-label {
             color: var(--text-muted);
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .stat-value {
             font-weight: 600;
         }
-        
+
         .stat-value.white { color: var(--text-primary); }
         .stat-value.draw { color: var(--text-secondary); }
         .stat-value.black { color: var(--text-muted); }
+
+        .book-moves-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .book-moves {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .book-move {
+            display: grid;
+            grid-template-columns: 50px 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .book-move-san {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .book-move-opening {
+            color: var(--text-secondary);
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .book-move-stats {
+            display: flex;
+            gap: 4px;
+            font-size: 10px;
+        }
+
+        .book-move-bar {
+            display: flex;
+            width: 80px;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-white { background: var(--text-primary); }
+        .bar-draw { background: var(--text-secondary); }
+        .bar-black { background: var(--text-muted); }
+
+        .top-games-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .top-game {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 11px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .top-game:last-child {
+            border-bottom: none;
+        }
+
+        .top-game-players {
+            color: var(--text-secondary);
+        }
+
+        .top-game-result {
+            font-weight: 600;
+        }
+
+        .top-game-year {
+            color: var(--text-muted);
+        }
         
         /* Engine panel */
         .engine-depth {
@@ -259,6 +418,9 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
         
         .move-item {
@@ -466,7 +628,24 @@
                     <div class="turn-dot" id="turnDot"></div>
                     <span id="turnText">White to move</span>
                 </div>
+                <div class="eval-display" id="evalDisplay">
+                    <span class="eval-score" id="evalScore">0.00</span>
+                    <div class="win-prob-bar" id="winProbBar">
+                        <div class="win-prob-white" id="winProbWhite" style="width: 50%"></div>
+                    </div>
+                </div>
                 <div class="move-count" id="moveCount">Move 1</div>
+            </div>
+
+            <div class="fen-section">
+                <div class="fen-display">
+                    <input type="text" id="fenDisplay" readonly>
+                    <button class="btn fen-btn" id="copyFenBtn" title="Copy FEN">Copy</button>
+                </div>
+                <div class="fen-input">
+                    <input type="text" id="fenInput" placeholder="Paste FEN to set position...">
+                    <button class="btn fen-btn" id="setFenBtn">Set</button>
+                </div>
             </div>
             
             <div class="panel">
@@ -484,6 +663,21 @@
         <div class="analysis-section">
             <div class="panel">
                 <div class="panel-header">
+                    <span class="panel-title">Engine Analysis</span>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button class="btn" id="explainBtn" style="padding: 6px 12px; font-size: 11px;">Explain Moves</button>
+                        <span class="panel-status engine-depth" id="engineDepth">Initializing...</span>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="move-list" id="moveList">
+                        <div class="empty-state">Analyzing position...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
                     <span class="panel-title">Opening Book</span>
                     <span class="panel-status" id="openingStatus">Lichess Masters DB</span>
                 </div>
@@ -495,18 +689,6 @@
                             <span class="stat-label">Games</span>
                             <span class="stat-value">—</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Engine Analysis</span>
-                    <span class="panel-status engine-depth" id="engineDepth">Initializing...</span>
-                </div>
-                <div class="panel-content">
-                    <div class="move-list" id="moveList">
-                        <div class="empty-state">Analyzing position...</div>
                     </div>
                 </div>
             </div>
@@ -578,7 +760,16 @@
             document.getElementById('skipApiKey').addEventListener('click', () => {
                 document.getElementById('apiKeyModal').classList.remove('active');
             });
-            
+            document.getElementById('explainBtn').addEventListener('click', fetchExplanations);
+            document.getElementById('copyFenBtn').addEventListener('click', copyFen);
+            document.getElementById('setFenBtn').addEventListener('click', setFenFromInput);
+            document.getElementById('fenInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') setFenFromInput();
+            });
+
+            // Initialize FEN display
+            updateFenDisplay();
+
             // Resize handling
             window.addEventListener('resize', () => board.resize());
         }
@@ -625,9 +816,12 @@
                 to: target,
                 promotion: 'q' // Auto-promote to queen for now
             });
-            
+
             if (move === null) return 'snapback';
-            
+
+            // Sync board with game state (needed for castling, en passant)
+            board.position(game.fen());
+
             updateDisplay();
             analyzePosition();
         }
@@ -650,6 +844,40 @@
             boardFlipped = !boardFlipped;
             board.flip();
         }
+
+        function copyFen() {
+            const fen = game.fen();
+            navigator.clipboard.writeText(fen).then(() => {
+                const btn = document.getElementById('copyFenBtn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        }
+
+        function setFenFromInput() {
+            const fenInput = document.getElementById('fenInput');
+            const fen = fenInput.value.trim();
+            if (!fen) return;
+
+            try {
+                const valid = game.load(fen);
+                if (valid) {
+                    board.position(fen);
+                    fenInput.value = '';
+                    updateDisplay();
+                    updateFenDisplay();
+                    analyzePosition();
+                } else {
+                    alert('Invalid FEN position');
+                }
+            } catch (e) {
+                alert('Invalid FEN format');
+            }
+        }
+
+        function updateFenDisplay() {
+            document.getElementById('fenDisplay').value = game.fen();
+        }
         
         // ============================================
         // Display updates
@@ -659,11 +887,14 @@
             const isWhite = game.turn() === 'w';
             document.getElementById('turnDot').className = 'turn-dot' + (isWhite ? '' : ' black');
             document.getElementById('turnText').textContent = isWhite ? 'White to move' : 'Black to move';
-            
+
             // Move count
             const fullMoves = Math.floor(game.history().length / 2) + 1;
             document.getElementById('moveCount').textContent = `Move ${fullMoves}`;
-            
+
+            // FEN display
+            updateFenDisplay();
+
             // Move history
             updateMoveHistory();
         }
@@ -787,16 +1018,40 @@
         
         function finalizeAnalysis() {
             updateAnalysisDisplay();
-            
-            // Fetch Claude explanations for top moves
-            if (apiKey) {
-                fetchExplanations();
-            }
         }
         
+        function updateEvalDisplay(evalStr) {
+            const scoreEl = document.getElementById('evalScore');
+            const barEl = document.getElementById('winProbWhite');
+
+            scoreEl.textContent = evalStr;
+
+            // Convert eval to win probability
+            let winProb = 50;
+            if (evalStr.startsWith('M')) {
+                const mateIn = parseInt(evalStr.substring(1));
+                winProb = mateIn > 0 ? 100 : 0;
+            } else {
+                const cp = parseFloat(evalStr) * 100;
+                // Using Lichess formula: winProb = 50 + 50 * (2 / (1 + exp(-0.00368208 * cp)) - 1)
+                winProb = 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * cp)) - 1);
+            }
+
+            barEl.style.width = `${winProb}%`;
+
+            // Color the score based on advantage
+            if (winProb > 55) {
+                scoreEl.style.color = 'var(--text-primary)';
+            } else if (winProb < 45) {
+                scoreEl.style.color = 'var(--text-muted)';
+            } else {
+                scoreEl.style.color = 'var(--text-secondary)';
+            }
+        }
+
         function updateAnalysisDisplay() {
             document.getElementById('engineDepth').textContent = `Depth ${currentDepth}`;
-            
+
             const moves = Object.values(analysisLines).sort((a, b) => {
                 // Sort by eval (best first)
                 const evalA = parseEval(a.eval);
@@ -808,34 +1063,40 @@
                 document.getElementById('moveList').innerHTML = '<div class="empty-state">No legal moves</div>';
                 return;
             }
-            
+
             currentAnalysis = moves;
-            
+
+            // Update the eval bar with best move's eval
+            if (moves.length > 0) {
+                updateEvalDisplay(moves[0].eval);
+            }
+
             let html = '';
             moves.forEach((m, i) => {
                 const evalClass = getEvalClass(m.eval);
                 const isBest = i === 0;
-                
+
                 html += `<div class="move-item${isBest ? ' best' : ''}" data-move="${m.uci}">
                     <span class="move-rank">#${i + 1}</span>
                     <div>
                         <div class="move-notation">${m.move}</div>
                         <div class="move-eval ${evalClass}">${m.eval}</div>
                     </div>
-                    <div class="move-explanation ${!apiKey ? '' : 'loading'}" id="explanation-${i}">
-                        ${!apiKey ? 'Add API key for explanations' : 'Generating explanation...'}
+                    <div class="move-explanation" id="explanation-${i}">
+                        ${!apiKey ? 'Add API key for explanations' : 'Click "Explain Moves" for analysis'}
                     </div>
                 </div>`;
             });
-            
+
             document.getElementById('moveList').innerHTML = html;
-            
-            // Add click handlers to preview moves
+
+            // Add hover handlers to preview moves
             document.querySelectorAll('.move-item').forEach(el => {
-                el.addEventListener('click', () => {
+                el.addEventListener('mouseenter', () => {
                     const uci = el.dataset.move;
                     previewMove(uci);
                 });
+                el.addEventListener('mouseleave', clearPreview);
             });
         }
         
@@ -857,27 +1118,47 @@
             return 'neutral';
         }
         
+        let previewPosition = null;
+
         function previewMove(uci) {
-            // Briefly show the move on the board
+            // Store current position if not already previewing
+            if (!previewPosition) {
+                previewPosition = game.fen();
+            }
+
+            // Create a temp game to make the move
+            const tempGame = new Chess(previewPosition);
             const from = uci.substring(0, 2);
             const to = uci.substring(2, 4);
-            
+            const promotion = uci.length > 4 ? uci[4] : undefined;
+
+            const move = tempGame.move({ from, to, promotion });
+            if (move) {
+                board.position(tempGame.fen(), false);
+            }
+
             // Highlight squares
             document.querySelectorAll('.square-55d63').forEach(sq => {
                 sq.style.boxShadow = '';
             });
-            
+
             const fromSq = document.querySelector(`.square-${from}`);
             const toSq = document.querySelector(`.square-${to}`);
-            
+
             if (fromSq) fromSq.style.boxShadow = 'inset 0 0 0 4px rgba(212, 160, 60, 0.6)';
             if (toSq) toSq.style.boxShadow = 'inset 0 0 0 4px rgba(212, 160, 60, 0.6)';
-            
-            // Clear highlights after a moment
-            setTimeout(() => {
-                if (fromSq) fromSq.style.boxShadow = '';
-                if (toSq) toSq.style.boxShadow = '';
-            }, 1500);
+        }
+
+        function clearPreview() {
+            if (previewPosition) {
+                board.position(previewPosition, false);
+                previewPosition = null;
+            }
+
+            // Clear highlights
+            document.querySelectorAll('.square-55d63').forEach(sq => {
+                sq.style.boxShadow = '';
+            });
         }
         
         // ============================================
@@ -903,7 +1184,7 @@
         
         function updateOpeningDisplay(data) {
             const content = document.getElementById('openingContent');
-            
+
             if (!data.opening && data.moves.length === 0) {
                 content.innerHTML = `
                     <div class="opening-name">Out of Book</div>
@@ -911,13 +1192,61 @@
                 `;
                 return;
             }
-            
+
             const opening = data.opening || { name: 'Starting Position', eco: '' };
             const total = data.white + data.draws + data.black || 1;
             const whitePercent = ((data.white / total) * 100).toFixed(1);
             const drawPercent = ((data.draws / total) * 100).toFixed(1);
             const blackPercent = ((data.black / total) * 100).toFixed(1);
-            
+
+            // Build book moves HTML
+            let bookMovesHtml = '';
+            if (data.moves && data.moves.length > 0) {
+                const topMoves = data.moves.slice(0, 5);
+                bookMovesHtml = `
+                    <div class="book-moves-title">Popular Continuations</div>
+                    <div class="book-moves">
+                        ${topMoves.map(m => {
+                            const mTotal = m.white + m.draws + m.black || 1;
+                            const mWhite = (m.white / mTotal) * 100;
+                            const mDraw = (m.draws / mTotal) * 100;
+                            const mBlack = (m.black / mTotal) * 100;
+                            const openingName = m.opening ? m.opening.name : '';
+                            return `
+                                <div class="book-move">
+                                    <span class="book-move-san">${m.san}</span>
+                                    <span class="book-move-opening" title="${openingName}">${openingName || '—'}</span>
+                                    <div class="book-move-bar" title="White: ${mWhite.toFixed(0)}% Draw: ${mDraw.toFixed(0)}% Black: ${mBlack.toFixed(0)}%">
+                                        <div class="bar-white" style="width: ${mWhite}%"></div>
+                                        <div class="bar-draw" style="width: ${mDraw}%"></div>
+                                        <div class="bar-black" style="width: ${mBlack}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+
+            // Build top games HTML
+            let topGamesHtml = '';
+            if (data.topGames && data.topGames.length > 0) {
+                const games = data.topGames.slice(0, 3);
+                topGamesHtml = `
+                    <div class="top-games-title">Notable Games</div>
+                    ${games.map(g => {
+                        const result = g.winner === 'white' ? '1-0' : g.winner === 'black' ? '0-1' : '½-½';
+                        return `
+                            <div class="top-game">
+                                <span class="top-game-players">${g.white.name} vs ${g.black.name}</span>
+                                <span class="top-game-result">${result}</span>
+                                <span class="top-game-year">${g.year}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                `;
+            }
+
             content.innerHTML = `
                 <div class="opening-name">${opening.name || 'Starting Position'}</div>
                 <div class="opening-eco">${opening.eco || ''}</div>
@@ -939,6 +1268,8 @@
                         <span class="stat-value black">${blackPercent}%</span>
                     </div>
                 </div>
+                ${bookMovesHtml}
+                ${topGamesHtml}
             `;
         }
         
@@ -946,8 +1277,24 @@
         // Claude Explanations
         // ============================================
         async function fetchExplanations() {
-            if (!apiKey || currentAnalysis.length === 0) return;
-            
+            if (!apiKey) {
+                document.getElementById('apiKeyModal').classList.add('active');
+                return;
+            }
+            if (currentAnalysis.length === 0) return;
+
+            // Show loading state
+            const btn = document.getElementById('explainBtn');
+            btn.disabled = true;
+            btn.textContent = 'Explaining...';
+            currentAnalysis.forEach((m, i) => {
+                const el = document.getElementById(`explanation-${i}`);
+                if (el) {
+                    el.classList.add('loading');
+                    el.textContent = 'Generating explanation...';
+                }
+            });
+
             const fen = game.fen();
             const turn = game.turn() === 'w' ? 'White' : 'Black';
             const moves = currentAnalysis.slice(0, 4).map(m => `${m.move} (eval: ${m.eval})`).join(', ');
@@ -981,7 +1328,7 @@ Be concise and insightful, like a strong club player explaining to an improving 
                         'anthropic-dangerous-direct-browser-access': 'true'
                     },
                     body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
+                        model: 'claude-sonnet-4-5-20250929',
                         max_tokens: 1024,
                         messages: [{ role: 'user', content: prompt }]
                     })
@@ -1005,7 +1352,7 @@ Be concise and insightful, like a strong club player explaining to an improving 
                         el.textContent = explanations[m.move] || 'No explanation available';
                     }
                 });
-                
+
             } catch (e) {
                 console.error('Claude API error:', e);
                 currentAnalysis.forEach((m, i) => {
@@ -1015,6 +1362,11 @@ Be concise and insightful, like a strong club player explaining to an improving 
                         el.textContent = 'Error fetching explanation';
                     }
                 });
+            } finally {
+                // Reset button state
+                const btn = document.getElementById('explainBtn');
+                btn.disabled = false;
+                btn.textContent = 'Explain Moves';
             }
         }
         
