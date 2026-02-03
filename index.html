@@ -665,6 +665,10 @@
                 <div class="panel-header">
                     <span class="panel-title">Engine Analysis</span>
                     <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="autoExplainCheckbox" style="cursor: pointer;">
+                            Auto
+                        </label>
                         <button class="btn" id="explainBtn" style="padding: 6px 12px; font-size: 11px;">Explain Moves</button>
                         <span class="panel-status engine-depth" id="engineDepth">Initializing...</span>
                     </div>
@@ -1018,6 +1022,12 @@
         
         function finalizeAnalysis() {
             updateAnalysisDisplay();
+
+            // Auto-explain if checkbox is checked
+            const autoExplain = document.getElementById('autoExplainCheckbox').checked;
+            if (autoExplain && apiKey && currentAnalysis.length > 0) {
+                fetchExplanations();
+            }
         }
         
         function updateEvalDisplay(evalStr) {
