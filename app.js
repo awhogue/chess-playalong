@@ -631,19 +631,11 @@ function clearPreview() {
 async function fetchOpeningData() {
     const fen = game.fen();
 
-    try {
-        // Lichess masters database
-        const response = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}`);
-        const data = await response.json();
-
-        updateOpeningDisplay(data);
-    } catch (e) {
-        console.error('Opening fetch error:', e);
-        document.getElementById('openingContent').innerHTML = `
-            <div class="opening-name">Unknown Position</div>
-            <div class="opening-eco">Not in opening book</div>
-        `;
-    }
+    // Lichess explorer API disabled (returning 401)
+    document.getElementById('openingContent').innerHTML = `
+        <div class="opening-name">Opening Book Disabled</div>
+        <div class="opening-eco">Lichess explorer unavailable</div>
+    `;
 }
 
 function updateOpeningDisplay(data) {
