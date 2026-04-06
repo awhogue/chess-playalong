@@ -92,6 +92,55 @@ async function saveExplanationToCache(fen, move, explanation) {
 }
 
 // ============================================
+// Engine Analysis Cache (Supabase + in-memory)
+// ============================================
+
+// Generate cache key from FEN (full FEN includes position, turn, castling, en passant)
+function getAnalysisCacheKey(fen) {
+    // Use position + turn + castling + en passant (drop halfmove/fullmove counters)
+    return fen.split(' ').slice(0, 4).join(' ');
+}
+
+// Check Supabase for cached engine analysis
+async function getAnalysisFromCache(fen) {
+    if (!supabaseClient) return null;
+
+    try {
+        const cacheKey = getAnalysisCacheKey(fen);
+        const { data, error } = await supabaseClient
+            .from('engine_analysis')
+            .select('analysis_lines, depth')
+            .eq('cache_key', cacheKey)
+            .maybeSingle();
+
+        if (error || !data) return null;
+        return { analysisLines: data.analysis_lines, currentDepth: data.depth };
+    } catch (e) {
+        return null;
+    }
+}
+
+// Store engine analysis in Supabase
+async function saveAnalysisToCache(fen, analysisData, depth) {
+    if (!supabaseClient) return;
+
+    try {
+        const cacheKey = getAnalysisCacheKey(fen);
+        await supabaseClient
+            .from('engine_analysis')
+            .upsert({
+                cache_key: cacheKey,
+                fen: fen,
+                analysis_lines: analysisData,
+                depth: depth,
+                created_at: new Date().toISOString()
+            }, { onConflict: 'cache_key' });
+    } catch (e) {
+        // Silently handle cache errors - not critical
+    }
+}
+
+// ============================================
 // URL State Management
 // ============================================
 function getFenFromUrl() {
@@ -331,6 +380,7 @@ function updateMoveHistory() {
 // ============================================
 let analysisLines = {};
 let currentDepth = 0;
+const engineCache = new Map(); // FEN -> { analysisLines, currentDepth }
 
 function analyzePosition() {
     // Clear previous analysis
@@ -357,8 +407,33 @@ function analyzePosition() {
         return;
     }
 
+    const fen = game.fen();
+
+    // Check in-memory cache first (instant)
+    const cached = engineCache.get(fen);
+    if (cached) {
+        analysisLines = JSON.parse(JSON.stringify(cached.analysisLines));
+        currentDepth = cached.currentDepth;
+        finalizeAnalysis();
+        fetchOpeningData();
+        return;
+    }
+
     document.getElementById('engineDepth').textContent = 'Analyzing...';
     document.getElementById('moveList').innerHTML = '<div class="empty-state">Analyzing position...</div>';
+
+    // Check Supabase cache (async, may resolve before Stockfish finishes)
+    getAnalysisFromCache(fen).then(dbCached => {
+        if (dbCached && game.fen() === fen) {
+            // Still on the same position — use cached result
+            analysisLines = dbCached.analysisLines;
+            currentDepth = dbCached.currentDepth;
+            // Populate in-memory cache too
+            engineCache.set(fen, JSON.parse(JSON.stringify(dbCached)));
+            if (stockfish) stockfish.postMessage('stop');
+            finalizeAnalysis();
+        }
+    });
 
     // Debounce analysis
     if (analysisTimeout) clearTimeout(analysisTimeout);
@@ -366,7 +441,7 @@ function analyzePosition() {
     analysisTimeout = setTimeout(() => {
         if (stockfish) {
             stockfish.postMessage('stop');
-            stockfish.postMessage(`position fen ${game.fen()}`);
+            stockfish.postMessage(`position fen ${fen}`);
             const depth = (typeof CONFIG !== 'undefined' && CONFIG.engine?.depth) || 18;
             stockfish.postMessage(`go depth ${depth}`);
         }
@@ -441,6 +516,14 @@ function parseAnalysisLine(line) {
 }
 
 function finalizeAnalysis() {
+    // Cache the completed analysis keyed by FEN (in-memory + Supabase)
+    const fen = game.fen();
+    if (Object.keys(analysisLines).length > 0) {
+        const snapshot = JSON.parse(JSON.stringify(analysisLines));
+        engineCache.set(fen, { analysisLines: snapshot, currentDepth });
+        saveAnalysisToCache(fen, snapshot, currentDepth);
+    }
+
     updateAnalysisDisplay();
 
     // Auto-explain if checkbox is checked

@@ -18,6 +18,7 @@ A feature-rich, browser-based chess analysis tool that combines interactive game
 - Move rankings by strength
 - Hover preview to see candidate move destinations on the board
 - Click any candidate move to play it on the board
+- Engine results cached per position (in-memory + optional Supabase persistence)
 
 ### Opening Book Integration
 - Masters games statistics for the current position
@@ -70,12 +71,13 @@ You can skip this step and use all other features without an API key.
 
 ### Supabase Caching (Optional)
 
-To cache move explanations and reduce API calls, you can set up Supabase:
+To cache move explanations and engine analysis across sessions, you can set up Supabase:
 
 1. Create a free project at [Supabase](https://supabase.com/)
 
-2. Create the `move_explanations` table using the SQL Editor:
+2. Create the required tables using the SQL Editor:
    ```sql
+   -- Cache for AI move explanations
    CREATE TABLE move_explanations (
        id SERIAL PRIMARY KEY,
        cache_key TEXT UNIQUE NOT NULL,
@@ -85,11 +87,21 @@ To cache move explanations and reduce API calls, you can set up Supabase:
        created_at TIMESTAMPTZ DEFAULT NOW()
    );
 
-   -- Enable Row Level Security
    ALTER TABLE move_explanations ENABLE ROW LEVEL SECURITY;
-
-   -- Allow public read/write access
    CREATE POLICY "Allow public access" ON move_explanations
+       FOR ALL USING (true) WITH CHECK (true);
+
+   -- Cache for Stockfish engine analysis
+   CREATE TABLE engine_analysis (
+       cache_key TEXT PRIMARY KEY,
+       fen TEXT NOT NULL,
+       analysis_lines JSONB NOT NULL,
+       depth INTEGER NOT NULL,
+       created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+
+   ALTER TABLE engine_analysis ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "Allow public access" ON engine_analysis
        FOR ALL USING (true) WITH CHECK (true);
    ```
 
@@ -106,7 +118,7 @@ To cache move explanations and reduce API calls, you can set up Supabase:
    };
    ```
 
-The app works without Supabase - explanations just won't be cached between sessions.
+The app works without Supabase - analysis and explanations just won't be cached between sessions. Within a single session, engine results are always cached in-memory regardless of Supabase.
 
 ## Usage
 
@@ -180,7 +192,7 @@ All settings can be configured in `config.js`:
 
 ```javascript
 const CONFIG = {
-    // Supabase (optional - for caching explanations)
+    // Supabase (optional - for caching explanations and engine analysis)
     supabase: {
         url: 'https://your-project.supabase.co',
         anonKey: 'your-anon-key'
