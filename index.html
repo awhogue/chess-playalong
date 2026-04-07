@@ -192,6 +192,22 @@
             transition: width 0.3s ease;
         }
 
+        .below-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            grid-column: 1;
+        }
+
+        .move-history-panel {
+            overflow-y: auto;
+            align-self: start;
+        }
+
+        .move-history-panel .empty-state {
+            padding: 4px 0;
+        }
+
         .fen-section {
             display: flex;
             flex-direction: column;
@@ -200,6 +216,7 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            align-self: start;
         }
 
         .fen-display, .fen-input {
@@ -235,6 +252,19 @@
             gap: 20px;
             overflow-y: auto;
             max-height: calc(100vh - 140px);
+            grid-column: 2;
+            grid-row: 2 / 4;
+        }
+
+        .analysis-section > .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .analysis-section > .panel > .panel-content {
+            flex: 1;
+            overflow-y: auto;
         }
         
         .panel {
@@ -418,7 +448,6 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 280px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -599,15 +628,26 @@
                 grid-template-columns: 1fr;
                 padding: 16px;
             }
-            
+
             #board {
                 width: 100%;
                 max-width: 480px;
             }
-            
+
             .analysis-section {
                 max-height: none;
+                grid-column: 1;
+                grid-row: auto;
             }
+
+            .below-board {
+                grid-template-columns: 1fr;
+            }
+
+            /* Reorder so engine analysis appears right after board */
+            .board-section { order: 1; }
+            .analysis-section { order: 2; }
+            .below-board { order: 3; }
         }
     </style>
 </head>
@@ -638,29 +678,8 @@
                 <div class="move-count" id="moveCount">Move 1</div>
             </div>
 
-            <div class="fen-section">
-                <div class="fen-display">
-                    <input type="text" id="fenDisplay" readonly>
-                    <button class="btn fen-btn" id="copyFenBtn" title="Copy FEN">Copy</button>
-                </div>
-                <div class="fen-input">
-                    <input type="text" id="fenInput" placeholder="Paste FEN to set position...">
-                    <button class="btn fen-btn" id="setFenBtn">Set</button>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Move History</span>
-                </div>
-                <div class="panel-content">
-                    <div class="move-history" id="moveHistory">
-                        <div class="empty-state">No moves yet</div>
-                    </div>
-                </div>
-            </div>
         </div>
-        
+
         <div class="analysis-section">
             <div class="panel">
                 <div class="panel-header">
@@ -682,8 +701,32 @@
                 </div>
             </div>
         </div>
+
+        <div class="below-board">
+            <div class="fen-section">
+                <div class="fen-display">
+                    <input type="text" id="fenDisplay" readonly>
+                    <button class="btn fen-btn" id="copyFenBtn" title="Copy FEN">Copy</button>
+                </div>
+                <div class="fen-input">
+                    <input type="text" id="fenInput" placeholder="Paste FEN to set position...">
+                    <button class="btn fen-btn" id="setFenBtn">Set</button>
+                </div>
+            </div>
+
+            <div class="panel move-history-panel">
+                <div class="panel-header">
+                    <span class="panel-title">Move History</span>
+                </div>
+                <div class="panel-content">
+                    <div class="move-history" id="moveHistory">
+                        <div class="empty-state">No moves yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <!-- API Key Modal -->
     <div class="modal-overlay" id="apiKeyModal">
         <div class="modal">
