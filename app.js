@@ -113,9 +113,15 @@ async function getAnalysisFromCache(fen) {
             .eq('cache_key', cacheKey)
             .maybeSingle();
 
-        if (error || !data) return null;
+        if (error) {
+            console.warn('Engine cache lookup error:', error.message);
+            return null;
+        }
+        if (!data) return null;
+        console.log('Engine cache hit for', cacheKey);
         return { analysisLines: data.analysis_lines, currentDepth: data.depth };
     } catch (e) {
+        console.warn('Engine cache lookup exception:', e.message);
         return null;
     }
 }
@@ -126,7 +132,7 @@ async function saveAnalysisToCache(fen, analysisData, depth) {
 
     try {
         const cacheKey = getAnalysisCacheKey(fen);
-        await supabaseClient
+        const { error } = await supabaseClient
             .from('engine_analysis')
             .upsert({
                 cache_key: cacheKey,
@@ -135,8 +141,13 @@ async function saveAnalysisToCache(fen, analysisData, depth) {
                 depth: depth,
                 created_at: new Date().toISOString()
             }, { onConflict: 'cache_key' });
+        if (error) {
+            console.warn('Engine cache save error:', error.message);
+        } else {
+            console.log('Engine analysis cached for', cacheKey);
+        }
     } catch (e) {
-        // Silently handle cache errors - not critical
+        console.warn('Engine cache save exception:', e.message);
     }
 }
 
@@ -158,8 +169,8 @@ function updateUrlWithFen() {
 // ============================================
 // Initialize
 // ============================================
-function init() {
-    initSupabase();
+async function init() {
+    await initSupabase();
     initBoard();
     initStockfish();
 
