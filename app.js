@@ -426,7 +426,6 @@ function analyzePosition() {
         analysisLines = JSON.parse(JSON.stringify(cached.analysisLines));
         currentDepth = cached.currentDepth;
         finalizeAnalysis();
-        fetchOpeningData();
         return;
     }
 
@@ -456,9 +455,6 @@ function analyzePosition() {
             const depth = (typeof CONFIG !== 'undefined' && CONFIG.engine?.depth) || 18;
             stockfish.postMessage(`go depth ${depth}`);
         }
-
-        // Also fetch opening book data
-        fetchOpeningData();
     }, 100);
 }
 
