@@ -7,8 +7,8 @@ const CONFIG = {
     // Supabase configuration (optional - for caching move explanations)
     // Get these from your Supabase project: Settings > API
     supabase: {
-        url: 'https://oabijmpkjwiknvcwrqii.supabase.co',      // e.g., 'https://your-project.supabase.co'
-        anonKey: 'sb_publishable_hAsmHml4BDC16RaLFLPTXw_4uje12_D'   // e.g., 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        url: 'https://uzccrjkdzriaacgmkzvg.supabase.co',      // e.g., 'https://your-project.supabase.co'
+        anonKey: 'sb_publishable_L7tzl-bGF-4COnufmM9LqQ_CCnssRqD'   // e.g., 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     },
 
     // Anthropic API key (optional - can also be set via the UI modal)
